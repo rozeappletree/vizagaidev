@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VizagAI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+        
+        :root {
+            --neon-cyan: #0ff;
+            --neon-pink: #f0f;
+            --neon-yellow: #ff0;
+            --bg-dark: #000;
+            --bg-gradient: linear-gradient(45deg, #000428, #004e92);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: var(--bg-dark);
+            color: var(--neon-cyan);
+            overflow: hidden;
+            cursor: none;
+            font-size: 16px;
+        }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-gradient);
+        }
+        
+        .ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            padding: 1rem;
+        }
+        
+        .glitch-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(1.5rem, 6vw, 4rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            animation: glitch 2s infinite;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            line-height: 1.2;
+            width: 90%;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { 
+                text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan);
+                transform: translate(-50%, -50%) scale(1);
+            }
+            25% { 
+                text-shadow: -2px 0 var(--neon-pink), 2px 0 var(--neon-cyan);
+                transform: translate(-49%, -50%) scale(1.02);
+            }
+            50% { 
+                text-shadow: 2px 0 var(--neon-yellow), -2px 0 var(--neon-pink);
+                transform: translate(-51%, -50%) scale(0.98);
+            }
+            75% { 
+                text-shadow: 0 0 10px var(--neon-yellow), 0 0 20px var(--neon-yellow), 0 0 30px var(--neon-yellow);
+            }
+        }
+        
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 255, 0.03) 2px,
+                rgba(0, 255, 255, 0.03) 4px
+            );
+            pointer-events: none;
+        }
+        
+        .corner-ui {
+            position: absolute;
+            padding: 0.5rem;
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+            line-height: 1.4;
+        }
+        
+        .top-left { 
+            top: 1rem; 
+            left: 1rem; 
+        }
+        .top-right { 
+            top: 1rem; 
+            right: 1rem; 
+            text-align: right;
+        }
+        .bottom-left { 
+            bottom: 5rem; 
+            left: 1rem; 
+        }
+        .bottom-right { 
+            bottom: 5rem; 
+            right: 1rem; 
+            text-align: right;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .cursor-glow {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--neon-cyan) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: screen;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 1s;
+        }
+        
+        .loading-bar {
+            width: clamp(150px, 50vw, 300px);
+            height: 2px;
+            background: rgba(0, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-yellow));
+            animation: load 3s ease-in-out;
+        }
+        
+        @keyframes load {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        
+        /* Join Us Button - Mobile Responsive */
+        .join-us-container {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            pointer-events: auto;
+        }
+        
+        .join-us-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: clamp(0.8rem, 3vw, 1.2rem) clamp(1.5rem, 5vw, 2.5rem);
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+            background-size: 200% 200%;
+            color: var(--bg-dark);
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            animation: buttonGlow 2s ease-in-out infinite alternate;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .join-us-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .join-us-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .join-us-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 30px rgba(0, 255, 255, 0.8);
+            background-position: 100% 100%;
+        }
+        
+        .join-us-btn:active {
+            transform: translateY(0);
+        }
+        
+        @keyframes buttonGlow {
+            0% {
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 
+                           0 0 40px rgba(255, 0, 255, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 
+                           0 0 60px rgba(255, 0, 255, 0.5);
+            }
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            .corner-ui {
+                font-size: 0.75rem;
+            }
+            
+            .top-left, .bottom-left {
+                left: 0.5rem;
+            }
+            
+            .top-right, .bottom-right {
+                right: 0.5rem;
+            }
+            
+            .ui-overlay {
+                padding: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .glitch-text {
+                font-size: 1.5rem;
+                letter-spacing: 0.1em;
+            }
+            
+            .corner-ui {
+                font-size: 0.7rem;
+                line-height: 1.2;
+            }
+        }
+        
+        /* Landscape mode adjustments */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .glitch-text {
+                font-size: 2rem;
+            }
+            
+            .join-us-container {
+                bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loading">
+        <div>
+            <div style="margin-bottom: 1rem; text-align: center;">INITIALIZING</div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="canvas-container"></div>
+    
+    <div class="ui-overlay">
+        <div class="glitch-text">Vizag AI DEVS</div>
+        <div class="scanlines"></div>
+        
+        <div class="corner-ui top-left">
+            <div>AI:ONLINE</div>
+            <div>COMMUNITY:ACTIVE</div>
+        </div>
+        
+        <div class="corner-ui top-right">
+            <div>VIZAG AI</div>
+            <div>2025</div>
+        </div>
+        
+        <div class="corner-ui bottom-left">
+            <div>JOIN</div>
+            <div>US</div>
+        </div>
+        
+        <div class="corner-ui bottom-right">
+            <div>WE WELCOME</div>
+            <div>YOU</div>
+        </div>
+        
+        <div class="join-us-container">
+            <a href="https://chat.whatsapp.com/invite/your-group-link" class="join-us-btn" target="_blank">
+                <i class="fab fa-whatsapp"></i>
+                Join Us
+            </a>
+        </div>
+    </div>
+    
+    <div class="cursor-glow"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Loading screen
+        setTimeout(() => {
+            document.getElementById('loading').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 1000);
+        }, 3000);
+        
+        // Custom cursor - only for non-touch devices
+        if (!('ontouchstart' in window)) {
+            document.addEventListener('mousemove', (e) => {
+                const cursor = document.querySelector('.cursor-glow');
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+        }
+        
+        // Three.js scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        // Camera position
+        camera.position.set(0, 5, 15);
+        camera.lookAt(0, 0, 0);
+        
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        scene.add(ambientLight);
+        
+        const neonColors = [0x00ffff, 0xff00ff, 0xffff00, 0xff0066, 0x00ff88];
+        
+        // Create neon city
+        const cityGroup = new THREE.Group();
+        
+        // Beach floor with glow
+        const beachGeometry = new THREE.PlaneGeometry(50, 50);
+        const beachMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x001122,
+            transparent: true,
+            opacity: 0.8
+        });
+        const beach = new THREE.Mesh(beachGeometry, beachMaterial);
+        beach.rotation.x = -Math.PI / 2;
+        beach.position.y = -2;
+        scene.add(beach);
+        
+        // Neon buildings
+        for (let i = 0; i < 20; i++) {
+            const height = Math.random() * 8 + 3;
+            const width = Math.random() * 2 + 0.5;
+            const depth = Math.random() * 2 + 0.5;
+            
+            const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
+            const buildingMaterial = new THREE.MeshBasicMaterial({
+                color: neonColors[Math.floor(Math.random() * neonColors.length)],
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+            building.position.x = (Math.random() - 0.5) * 40;
+            building.position.z = (Math.random() - 0.5) * 40;
+            building.position.y = height / 2 - 2;
+            
+            // Add edge glow
+            const edges = new THREE.EdgesGeometry(buildingGeometry);
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: neonColors[Math.floor(Math.random() * neonColors.length)],
+                linewidth: 2
+            });
+            const wireframe = new THREE.LineSegments(edges, lineMaterial);
+            building.add(wireframe);
+            
+            cityGroup.add(building);
+        }
+        
+        // Floating AI cubes
+        const aiCubes = [];
+        for (let i = 0; i < 10; i++) {
+            const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+            const cubeMaterial = new THREE.MeshBasicMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.9
+            });
+            const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            cube.position.set(
+                (Math.random() - 0.5) * 30,
+                Math.random() * 10,
+                (Math.random() - 0.5) * 30
+            );
+            cube.userData = {
+                speed: Math.random() * 0.02 + 0.01,
+                rotationSpeed: Math.random() * 0.02 + 0.01
+            };
+            aiCubes.push(cube);
+            cityGroup.add(cube);
+        }
+        
+        // Neon palm trees (futuristic)
+        for (let i = 0; i < 15; i++) {
+            const trunkGeometry = new THREE.CylinderGeometry(0.1, 0.1, 4);
+            const trunkMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            
+            const leavesGeometry = new THREE.SphereGeometry(1.5, 8, 6);
+            const leavesMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.6
+            });
+            const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+            leaves.position.y = 2.5;
+            
+            const palm = new THREE.Group();
+            palm.add(trunk);
+            palm.add(leaves);
+            
+            palm.position.x = (Math.random() - 0.5) * 35;
+            palm.position.z = (Math.random() - 0.5) * 35;
+            palm.position.y = -2;
+            
+            cityGroup.add(palm);
+        }
+        
+        // Particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1000;
+        const posArray = new Float32Array(particlesCount * 3);
+        
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 50;
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.8
+        });
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        cityGroup.add(particles);
+        
+        scene.add(cityGroup);
+        
+        // Mouse movement - only for non-touch devices
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        if (!('ontouchstart' in window)) {
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            });
+        }
+        
+        // Touch support for mobile
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                mouseX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+            }
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                mouseX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+            }
+        }, { passive: false });
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotate AI cubes
+            aiCubes.forEach(cube => {
+                cube.rotation.x += cube.userData.rotationSpeed;
+                cube.rotation.y += cube.userData.rotationSpeed;
+                cube.position.y += Math.sin(Date.now() * cube.userData.speed) * 0.01;
+            });
+            
+            // Floating particles
+            particles.rotation.y += 0.001;
+            
+            // Camera movement
+            camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
+            camera.position.y += (mouseY * 5 - camera.position.y) * 0.05;
+            camera.lookAt(0, 0, 0);
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+    </script>
+</body>
+</html>

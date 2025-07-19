@@ -3,13 +3,14 @@
 
 ### Linking domain to gh pages
 
-add `A record` with `@` host in DNS records.
+Add `A record` with `@` host in DNS records. And `CNAME record` with `www` host with 60mins.
 
 ```
 A  @  185.199.108.153  AUTO TTL
 A  @  185.199.109.153  AUTO TTL
 A  @  185.199.110.153  AUTO TTL
 A  @  185.199.111.153  AUTO TTL
+CNAME Record  www  rozeappletree.github.io  60mins TTL
 ```
 
 source: 

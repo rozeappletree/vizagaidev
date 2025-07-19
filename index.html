@@ -49,13 +49,13 @@
             pointer-events: none;
             z-index: 100;
             padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         .glitch-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             font-size: clamp(1.5rem, 6vw, 4rem);
             font-weight: 900;
             text-transform: uppercase;
@@ -68,20 +68,21 @@
             text-align: center;
             line-height: 1.2;
             width: 90%;
+            margin-bottom: 2rem;
         }
         
         @keyframes glitch {
             0%, 100% { 
                 text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan);
-                transform: translate(-50%, -50%) scale(1);
+                transform: scale(1);
             }
             25% { 
                 text-shadow: -2px 0 var(--neon-pink), 2px 0 var(--neon-cyan);
-                transform: translate(-49%, -50%) scale(1.02);
+                transform: scale(1.02);
             }
             50% { 
                 text-shadow: 2px 0 var(--neon-yellow), -2px 0 var(--neon-pink);
-                transform: translate(-51%, -50%) scale(0.98);
+                transform: scale(0.98);
             }
             75% { 
                 text-shadow: 0 0 10px var(--neon-yellow), 0 0 20px var(--neon-yellow), 0 0 30px var(--neon-yellow);
@@ -102,39 +103,6 @@
                 rgba(0, 255, 255, 0.03) 4px
             );
             pointer-events: none;
-        }
-        
-        .corner-ui {
-            position: absolute;
-            padding: 0.5rem;
-            font-size: clamp(0.7rem, 2vw, 0.9rem);
-            opacity: 0.7;
-            animation: pulse 2s infinite;
-            line-height: 1.4;
-        }
-        
-        .top-left { 
-            top: 1rem; 
-            left: 1rem; 
-        }
-        .top-right { 
-            top: 1rem; 
-            right: 1rem; 
-            text-align: right;
-        }
-        .bottom-left { 
-            bottom: 5rem; 
-            left: 1rem; 
-        }
-        .bottom-right { 
-            bottom: 5rem; 
-            right: 1rem; 
-            text-align: right;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
         }
         
         .cursor-glow {
@@ -181,36 +149,36 @@
             100% { width: 100%; }
         }
         
-        /* Join Us Button - Mobile Responsive */
         .join-us-container {
-            position: fixed;
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 200;
+            position: relative;
+            margin-top: 2rem;
             pointer-events: auto;
         }
         
         .join-us-btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: clamp(0.8rem, 3vw, 1.2rem) clamp(1.5rem, 5vw, 2.5rem);
-            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
-            background-size: 200% 200%;
+            gap: 0.75rem;
+            padding: clamp(1rem, 3vw, 1.5rem) clamp(2rem, 5vw, 3rem);
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink), var(--neon-yellow));
+            background-size: 300% 300%;
             color: var(--bg-dark);
             font-family: 'Orbitron', monospace;
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
             font-weight: 700;
             text-decoration: none;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            animation: buttonGlow 2s ease-in-out infinite alternate;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
+                       0 0 60px rgba(255, 0, 255, 0.4);
+            animation: buttonGlow 2s ease-in-out infinite alternate,
+                       gradientShift 3s ease-in-out infinite;
             position: relative;
             overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
         
         .join-us-btn::before {
@@ -220,52 +188,62 @@
             left: 50%;
             width: 0;
             height: 0;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             transition: width 0.6s, height 0.6s;
+            z-index: 0;
         }
         
         .join-us-btn:hover::before {
-            width: 300px;
-            height: 300px;
+            width: 400px;
+            height: 400px;
         }
         
         .join-us-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 30px rgba(0, 255, 255, 0.8);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 40px rgba(0, 255, 255, 0.9),
+                       0 12px 80px rgba(255, 0, 255, 0.6);
             background-position: 100% 100%;
         }
         
         .join-us-btn:active {
-            transform: translateY(0);
+            transform: translateY(-2px) scale(1.02);
         }
         
         @keyframes buttonGlow {
             0% {
-                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 
-                           0 0 40px rgba(255, 0, 255, 0.3);
+                box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), 
+                           0 0 60px rgba(255, 0, 255, 0.4);
             }
             100% {
-                box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 
-                           0 0 60px rgba(255, 0, 255, 0.5);
+                box-shadow: 0 0 40px rgba(0, 255, 255, 0.9), 
+                           0 0 80px rgba(255, 0, 255, 0.7);
             }
         }
         
-        /* Mobile-specific adjustments */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .join-us-btn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .join-us-btn i {
+            font-size: 1.2em;
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+        
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        
         @media (max-width: 768px) {
-            .corner-ui {
-                font-size: 0.75rem;
-            }
-            
-            .top-left, .bottom-left {
-                left: 0.5rem;
-            }
-            
-            .top-right, .bottom-right {
-                right: 0.5rem;
-            }
-            
             .ui-overlay {
                 padding: 0.5rem;
             }
@@ -275,22 +253,6 @@
             .glitch-text {
                 font-size: 1.5rem;
                 letter-spacing: 0.1em;
-            }
-            
-            .corner-ui {
-                font-size: 0.7rem;
-                line-height: 1.2;
-            }
-        }
-        
-        /* Landscape mode adjustments */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .glitch-text {
-                font-size: 2rem;
-            }
-            
-            .join-us-container {
-                bottom: 0.5rem;
             }
         }
     </style>
@@ -311,30 +273,10 @@
         <div class="glitch-text">Vizag AI DEVS</div>
         <div class="scanlines"></div>
         
-        <div class="corner-ui top-left">
-            <div>AI:ONLINE</div>
-            <div>COMMUNITY:ACTIVE</div>
-        </div>
-        
-        <div class="corner-ui top-right">
-            <div>VIZAG AI</div>
-            <div>2025</div>
-        </div>
-        
-        <div class="corner-ui bottom-left">
-            <div>JOIN</div>
-            <div>US</div>
-        </div>
-        
-        <div class="corner-ui bottom-right">
-            <div>WE WELCOME</div>
-            <div>YOU</div>
-        </div>
-        
         <div class="join-us-container">
             <a href="https://chat.whatsapp.com/invite/your-group-link" class="join-us-btn" target="_blank">
-                <i class="fab fa-whatsapp"></i>
-                Join Us
+                <i class="fas fa-rocket"></i>
+                <span>Join the AI Revolution</span>
             </a>
         </div>
     </div>
